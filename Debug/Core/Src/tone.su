@@ -1,0 +1,2 @@
+tone.c:24:6:play_tone	24	static
+tone.c:83:6:play_tune	8	static

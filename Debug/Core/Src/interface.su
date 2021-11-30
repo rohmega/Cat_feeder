@@ -1,0 +1,12 @@
+interface.c:67:6:draw_power	40	static
+interface.c:89:6:draw_lock	24	static
+interface.c:110:6:draw_gear	24	static
+interface.c:131:6:draw_back	24	static
+interface.c:153:6:draw_main	56	static
+interface.c:392:6:button	24	static
+interface.c:402:6:test	24	static
+interface.c:414:6:draw_extra_options	136	static
+interface.c:672:6:draw_options	104	static
+interface.c:761:6:feed_set	72	static
+interface.c:1006:6:set_time	64	static
+interface.c:1127:6:calibrate_feed	120	static
