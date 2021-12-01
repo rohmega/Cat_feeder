@@ -1,5 +1,4 @@
 # Cat_feeder
-Cat feeding machine
 I made a cat feeding machine. The 3D files are not yet published, but the STM32 code is in this repository.
 More information to follow.
 
