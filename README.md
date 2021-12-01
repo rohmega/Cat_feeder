@@ -2,5 +2,4 @@
 I made a cat feeding machine. The 3D files are not yet published, but the STM32 code is in this repository.
 More information to follow.
 
-
-(Open the Feeder.jpg to get a glimpse of the feeding machine!)
+![Cat_feeder](https://github.com/rohmega/Cat_feeder/blob/7583aec1de3445ba82a64b3a91230382157e3d95/Feeder.jpg)
