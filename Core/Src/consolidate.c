@@ -35,6 +35,7 @@ char str[8];
 extern short update;
 
 extern _RTC rtc;
+extern short skip_meal;
 
 short skip=0;
 
@@ -148,10 +149,14 @@ void selection_action(void)
 				break;
 
 				case 0: //selection_wheel=0 --> verification
-					if(selection==1)
+					if(selection==1) //save settings
 					{
 						feed_status=1-feed_status;
 						write_vars(buffer);
+					}
+					if(selection==2) //skip next meal
+					{
+						skip_meal=1-skip_meal;
 					}
 					update=1;
 					selection_wheel=-1;
@@ -790,15 +795,21 @@ void feed_cat_time(void)
 	{
 		if(rtc.Hour==feed_time[i][0] && rtc.Min==feed_time[i][1] && feed_once==0)
 		{
-			feeders=i;
+			feeders=i; //remember which feed_number is currently in the time span
 			feed_once=1;
-			if(feed_status==1)
+			if(feed_status==1 && skip_meal==0)
 			{
-				feed_cat(20000/feed_cal*feed_amount[i]);
+				feed_cat(20000/feed_cal*feed_amount[i]);  //20 seconds calibration time
+			}
+			if(skip_meal==1)
+			{
+				skip_meal=0;
+				update=1;
 			}
 		}
 		else if(rtc.Hour!=feed_time[i][0] || rtc.Min!=feed_time[i][1])
 		{
+
 			if(feeders==i)
 			{
 				feed_once=0;

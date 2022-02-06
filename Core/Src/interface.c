@@ -46,6 +46,9 @@ extern short time_out;
 extern short feed_cal;
 short once=0;
 short count_var=0;
+extern short skip_meal;
+int time_diff_meal=1500;
+short meal_index_skip=-1;
 
 //uint8_t POWER[]={00000111Y,11111111Y};
 
@@ -152,12 +155,14 @@ void draw_back()
 
 void draw_main()
 {
-	char str[5];	
+	char str[8];
 	//char str[4];
+
 
 
 	if(prev_day!=curr_day||prev_menu!=menu || update)
 	{
+		time_diff_meal=1500;
 
 		count_var++;
 		update=0;
@@ -172,23 +177,59 @@ void draw_main()
 		// Draw feed times and amounts:
 		TFT9341_SetTextColor(0x0000);
 		TFT9341_SetFont(&Font24);
+
+
+		if(skip_meal==1)
+		{
+			for(int i=0;i<(feed_number);i++)
+			{
+				int Alarm_diff=(feed_time[i][0]-rtc.Hour)*60+feed_time[i][1]-rtc.Min;
+				if(Alarm_diff<0)
+				{
+					Alarm_diff=Alarm_diff+24*60;
+				}
+
+				if(Alarm_diff<time_diff_meal)
+				{
+					time_diff_meal=Alarm_diff;
+					meal_index_skip=i;
+				}
+			}
+			//TFT9341_SetTextColor(0xf0f0);
+			//sprintf(str,"%d",time_diff_meal);
+			//TFT9341_String(30,180,str);
+		}
+
 		// Erase previous
+		/*
 		for(int i=0;i<(prev_feed_number);i++)
 		{
+			TFT9341_SetTextColor(0xffff);
+
 			sprintf(str,"%d:%d",prev_feed_time[i][0],prev_feed_time[i][1]);
 			TFT9341_String(140,90+i*40+((2-prev_feed_number)*20),str);
 			sprintf(str,"%d",prev_feed_amount[i]);
 			TFT9341_String(250,90+i*40+((2-prev_feed_number)*20),strcat(str,"g"));
 		}
+		*/
 		TFT9341_SetTextColor(0xFFFF);
 		// draw new
 		for(int i=0;i<(feed_number);i++)
 		{
+			if(meal_index_skip==i && skip_meal==1)
+			{
+				TFT9341_SetTextColor(0xF000);
+			}
+			else
+			{
+				TFT9341_SetTextColor(0xFFFF);
+			}
 			sprintf(str,"%d:%d",feed_time[i][0],feed_time[i][1]);
 
 			TFT9341_String(140,90+i*40+((2-feed_number)*20),time_text(feed_time[i][0],feed_time[i][1],1));
 			sprintf(str,"%d",feed_amount[i]);
 			TFT9341_String(250,90+i*40+((2-feed_number)*20),strcat(str,"g"));
+			TFT9341_SetTextColor(0xFFFF);
 		}
 
 		draw_lock();
@@ -262,7 +303,8 @@ void draw_main()
 
 		}
 
-
+		//sprintf(str,"%d",skip_meal);
+		//TFT9341_String(30,180,str);
 
 	}
 
@@ -318,42 +360,78 @@ void draw_main()
 
 	if(selection_wheel==0)
 	{
-		limit_selection(0, 1);
+		short offset=48;
+		short middle_move=5;
+		short outer_move=10;
+		limit_selection(0, 2);
 		if(once==0)
 		{
 			once=1;
 			//TFT9341_FillRect(55, 35, 320-55,40 , 0x00f0);
-			TFT9341_FillRect(60, 40, 320-60,150 , 0x0000);
+			TFT9341_FillRect(5, 30, 320-5,160 , 0x0000);
 
 			TFT9341_SetTextColor(0xffff);
 			TFT9341_SetFont(&Font16);
-			TFT9341_String(62, 50, "Weet je het zeker?");
 
-			TFT9341_FillRect(65, 85, 150, 125, 0x0E3F);
-			TFT9341_FillRect(170, 85, 255, 125, 0x0E3F);
-			TFT9341_SetFont(&Font24);
+			if(feed_status==1)
+			{
+				TFT9341_String(12, 40, "Uitzetten? Of volgende");
+			}
+			else
+			{
+				TFT9341_String(12, 40, "Aanzetten? Of volgende");
+			}
+
+			TFT9341_String(12, 60, "voermoment skippen?");
+
+			TFT9341_FillRect(65-offset-outer_move, 85, 150-offset-outer_move, 125, 0x0E3F);
+			TFT9341_FillRect(170-offset-10, 85, 255-offset+10, 125, 0x0E3F);
+			TFT9341_FillRect(275-offset+outer_move, 85, 360-offset, 125, 0x0E3F);
+			TFT9341_SetFont(&Font20);
 			TFT9341_SetTextColor(0xf000);
 			TFT9341_SetBackColor(0x0E3F);
-			TFT9341_String(85,95,"Nee");
-			TFT9341_String(195,95,"Ja");
+			TFT9341_String(85-offset-12-outer_move,98,"Terug");
+			if (feed_status==1)
+			{
+
+				TFT9341_String(195-offset-30+20,98,"Uit");
+			}
+			else
+			{
+
+				TFT9341_String(195-offset-30+20,98,"Aan");
+			}
+
+			TFT9341_String(305-offset-14,98,"Skip");
 			TFT9341_SetBackColor(0x0000);
 
 		}
 
 		if(selection!=prev_selection)
 		{
+
 			if(selection==0)
 			{
-				TFT9341_FillRect(170, 135, 255, 145, 0x0000);
-				TFT9341_FillRect(65, 135, 150, 145, 0xf000);
+				TFT9341_FillRect(275-offset+outer_move, 135, 360-offset, 145, 0x0000);
+				TFT9341_FillRect(170-offset-middle_move, 135, 255-offset+middle_move, 145, 0x0000);
+				TFT9341_FillRect(65-offset-outer_move, 135, 150-offset-outer_move, 145, 0xf000);
 			}
-			else if(selection==1)
+			if(selection==1)
 			{
-				TFT9341_FillRect(170, 135, 255, 145, 0xf000);
-				TFT9341_FillRect(65, 135, 150, 145, 0x0000);
+				TFT9341_FillRect(275-offset+outer_move, 135, 360-offset, 145, 0x0000);
+				TFT9341_FillRect(170-offset-middle_move, 135, 255-offset+middle_move, 145, 0xf000);
+				TFT9341_FillRect(65-offset-outer_move, 135, 150-offset-outer_move, 145, 0x0000);
+			}
+			if(selection==2)
+			{
+				TFT9341_FillRect(275-offset+outer_move, 135, 360-offset, 145, 0xf000);
+				TFT9341_FillRect(170-offset-middle_move, 135, 255-offset+middle_move, 145, 0x0000);
+				TFT9341_FillRect(65-offset-outer_move, 135, 150-offset-outer_move, 145, 0x0000);
+
 			}
 			prev_selection=selection;
-
+			//sprintf(str,"%d",selection);
+			//TFT9341_String(140,70,str);
 		}
 	}
 	else
@@ -386,7 +464,6 @@ void draw_main()
 
 
 
-	//TFT9341_DrawRect(0xffff,5,200,35,235);
 }
 
 void button(uint16_t x,uint16_t y,uint16_t r)
@@ -434,7 +511,7 @@ void draw_extra_options(void) //overige instellingen
 		//TFT9341_String(x_pos,y_pos[0],str);
 		sprintf(str,"Time-out scherm : %s",timeout_vis());
 		TFT9341_String(x_pos,y_pos[0],str);
-		short percentage=screen_brightness/65500;
+		short percentage=screen_brightness/655;
 		sprintf(str,"Schermhelderheid:%d %%",percentage);
 		TFT9341_String(x_pos,y_pos[1],str);
 		if(sound_feed==1)
@@ -802,7 +879,11 @@ void feed_set(void) //activates on button_press since it is in that function -->
 			//sprintf(str,time_text(feed_time[i][1],feed_time[i][2]));
 			TFT9341_String(15,20+(i+1)*30,time_text(feed_time[i][0],feed_time[i][1],1));
 			sprintf(str,"%d g   ",feed_amount[i]);
+
+
+			TFT9341_SetTextColor(0xffff);
 			TFT9341_String(110,20+(i+1)*30,str);
+
 		}
 
 

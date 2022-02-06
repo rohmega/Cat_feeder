@@ -134,6 +134,8 @@ long time_check_old=0;
 
 short curr_time[2][2];
 
+short skip_meal=0;
+
 // external variables:
 bool pressed;
 bool button_pressed=false;
@@ -168,7 +170,7 @@ uint8_t buffer[22];
 int main(void)
 {
 	/* USER CODE BEGIN 1 */
-
+	HAL_GPIO_WritePin(BLED_GPIO_Port,BLED_Pin,GPIO_PIN_SET);
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -341,7 +343,7 @@ int main(void)
 	//HAL_GPIO_WritePin(BLED_GPIO_Port,BLED_Pin,GPIO_PIN_SET);
 	//feed_cat(1000);
 	TIM1->CCR1=screen_brightness;
-
+	HAL_GPIO_WritePin(BLED_GPIO_Port,BLED_Pin,GPIO_PIN_RESET);
 	while (1)
 	{
 		menu_draw(); //takes care of all drawing actions on the screen
@@ -395,7 +397,7 @@ int main(void)
 		// check de voertijden elke 10sec
 		if(TIM2->CNT-time_check_old>10000 && (sub_menu!=0 || menu!=1 || sub_menu!=2))
 		{
-			DS3231_GetTime(&rtc);
+			DS3231_GetTime(&rtc); //get the current time
 			time_check_old=TIM2->CNT;
 			feed_cat_time();
 		}
